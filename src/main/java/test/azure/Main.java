@@ -12,10 +12,16 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.azure.core.http.HttpClient;
+import com.azure.core.http.HttpRequest;
+import com.azure.core.http.HttpResponse;
+import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.specialized.BlockBlobClient;
+
+import reactor.core.publisher.Mono;
 
 
 public class Main {
@@ -45,8 +51,7 @@ public class Main {
 	
 	
 	private static void createContainer() {
-		BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-			    .endpoint("<your-storage-account-url>" + "?" + "<your-sasToken>")
+		BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(storageConnectionString)
 			    .buildClient();
 		
 		BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containername);
@@ -55,8 +60,7 @@ public class Main {
 	}
 
 	private static String uploadBlobToContainerAndGetBlobURL(InputStream stream, String fileName) {
-		BlobServiceClient blobServiceClient = new BlobServiceClientBuilder()
-			    .endpoint("<your-storage-account-url>" + "?" + "<your-sasToken>")
+		BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().connectionString(storageConnectionString)
 			    .buildClient();
 		
 		BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(containername);
@@ -65,6 +69,7 @@ public class Main {
 		BlockBlobClient blockBlobClient = blobContainerClient.getBlobClient(myBlobName).getBlockBlobClient();
 		blockBlobClient.upload(stream,UNKNOWN_LNEGTH);
 		String url = blockBlobClient.getBlobUrl();
+		
 		
 		return url;
 	}
@@ -86,6 +91,7 @@ public class Main {
         	return response.getStatusLine().getStatusCode();
             
         }
+       
 		
 	}
 	/*
