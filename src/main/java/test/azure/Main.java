@@ -1,6 +1,11 @@
 package test.azure;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +40,7 @@ public class Main {
 	public static final long UNKNOWN_LNEGTH = -1;
 	public static final String username = "your_username";
 	public static final String password = "your_password";
-	public static final String FROCR_ENDPOINT_URL = "your_endpoint_url";
+	public static final String FROCR_ENDPOINT_URL = "https://af-hrb-complete-it/api/ExtractFomfields/";
 	
 	public static void main(String[] args) throws Exception {
 		
@@ -43,10 +48,7 @@ public class Main {
 		String fileName = "dummy";
 		createContainer();
 		String url = uploadBlobToContainerAndGetBlobURL(stream, fileName);
-		int responseCode = callFROCRAPI(url);
-		if(responseCode == 200) {
-			//TODO : Watchdog and rest of process
-		}
+		String responseCode = callGETAPIFOROCR(url); //callFROCRAPI(url);
 	}
 	
 	
@@ -91,8 +93,31 @@ public class Main {
         	return response.getStatusLine().getStatusCode();
             
         }
-       
-		
+	}
+	private static String callGETAPIFOROCR(String url) throws IOException {
+		URL obj = new URL(FROCR_ENDPOINT_URL+"?BlobUrl="+url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+		con.setRequestMethod("GET");
+		int responseCode = con.getResponseCode();
+		System.out.println("GET Response Code :: " + responseCode);
+		if (responseCode == HttpURLConnection.HTTP_OK) { // success
+			// This is just to extract the response not really required 
+			// IF 200 comes you can do what next we need to do
+			BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+			String inputLine;
+			StringBuffer response = new StringBuffer();
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
+			// print result
+			System.out.println(response.toString());
+			return response.toString();
+		} else {
+			System.out.println("GET request not worked");
+		}
+		return null;
+
 	}
 	/*
 	 * Here we need to write a logic used in your application to generate file name
